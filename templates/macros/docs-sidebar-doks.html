@@ -1,0 +1,77 @@
+{% macro docs_sidebar(current_section) %}
+<div class="col-lg-5 col-xl-4 docs-sidebar d-none d-lg-block">
+	<nav class="docs-links" aria-label="Main navigation">
+		<ul class="list-unstyled collapsible-sidebar">
+			{% set index_path = current_section ~ "/_index.md" | trim_start_matches(pat="/") %}
+			{% set index = get_section(path=index_path) %}
+			{# Root pages i.e., in the root folder "docs" #}
+			{% if index.pages %}
+				<ul class="list-unstyled">
+					{% for page in index.pages %}
+						<li><a class="docs-link rounded {% if current_url == page.permalink %} active{% endif %}"
+							href="{{ page.permalink | safe }}">{{ page.title }}</a></li>
+					{% endfor %}
+				</ul>
+			{% endif %}
+
+			{% if index.subsections %}
+				{# <!-- index has subsections (folders) {{index}}--> #}
+
+				{% for s in index.subsections %}
+					{% set subsection = get_section(path=s) %}
+					{# <!-- SUB {{subsection | json_encode(pretty=true) }}--> #}
+					{% if subsection.pages or subsection.subsections %}
+					{# subsection is not empty #}
+						{% set isSubDir = false -%}
+						{% if subsection.permalink in current_url %}
+							{% set isSubDir = true -%}
+						{% endif %}
+
+						<li class="mb-1"><button class="btn btn-toggle align-items-center rounded {% if not isSubDir %} collapsed {% endif -%}" data-bs-toggle="collapse"
+							data-bs-target="#section-{{ subsection.title | slugify -}}" aria-expanded="{{isSubDir}}">
+							{{ subsection.title }}</button> {# button to (un)fold for the subsection (dir) #}
+							<div class="collapse {% if isSubDir %} show {% endif -%}" id="section-{{ subsection.title | slugify -}}">
+								<ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+
+									{# Adding the pages if any #}
+									{% for page in subsection.pages %}
+									<li><a class="docs-link rounded {% if page.permalink == current_url %} active {% endif %}"
+											href="{{ page.permalink | safe }}">{{ page.title }}</a></li>
+									{% endfor %}
+									
+									{# Adding the subsubsections if any #}
+									{% for ss in subsection.subsections %}
+										{% set subsubsection = get_section(path=ss) %}
+										{% set isSubSubDir = false -%}
+										{% if subsubsection.permalink in current_url %}
+											{% set isSubSubDir = true -%}
+										{% endif %}
+										{% if subsubsection.pages %}
+										<li class="my-1 ms-3"><button class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse"
+											data-bs-target="#subsection-{{subsubsection.title | slugify -}}" aria-expanded="{{isSubSubDir}}">
+											{{subsubsection.title}}</button>
+										<div class="collapse {% if isSubSubDir %} show {% endif -%}" id="subsection-{{subsubsection.title | slugify -}}">
+											<ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+										{% for page in subsubsection.pages %}
+										<li><a class="docs-link rounded {% if page.permalink == current_url %} active {% endif %}" href="{{ page.permalink | safe }}">
+											{{ page.title }}
+										</a>
+										</li>
+										{% endfor %}
+										</ul>
+										</div>
+										</li>
+									{# </ul> #}
+									{% endif %}
+									{% endfor %}
+
+								</ul>
+							</div>
+						</li>
+					{% endif %}
+				{% endfor %}
+			{% endif %}
+		</ul>
+	</nav>
+</div>
+{% endmacro %}
