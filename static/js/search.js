@@ -79,7 +79,8 @@ Source:
       fields: {
         title: {boost: 2},
         body: {boost: 1},
-      }
+      },
+      expand: true
     };
     var results = index.search(value, options);
 
